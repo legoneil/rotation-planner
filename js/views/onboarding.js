@@ -1,4 +1,5 @@
 import { CAMPUSES } from '../data/bolles-2026-27.js';
+import { teacherDatalist } from '../forms.js';
 import { CLASS_TYPES } from '../store.js';
 import { esc, ordinal } from '../ui.js';
 
@@ -14,6 +15,7 @@ export function renderOnboarding(draft, { accounts = false, invite = null } = {}
         <p class="muted small">Made by a Bolles student for Bolles students. Not affiliated with The Bolles School. <a href="privacy.html">Privacy</a></p>
         ${invite ? `<p class="have-account"><b>${esc(invite.name || 'A friend')}</b> invited you to compare schedules. Set up your planner first (about a minute), then you can add them.</p>` : ''}
         ${accounts ? '<p class="have-account">Already set up on another device? <button class="link-btn" data-action="open-auth" data-mode="signin">Sign in</button></p>' : ''}
+        <p class="eyebrow onboard-step">Step 1 of 2</p>
         <form data-form="onboard-school" class="stack">
           <fieldset>
             <legend>Which campus?</legend>
@@ -41,6 +43,7 @@ export function renderOnboarding(draft, { accounts = false, invite = null } = {}
       <p class="eyebrow">Step 2 of 2</p>
       <h1>Your classes</h1>
       <p class="lead">Fill in what you have each period. Leave a row blank for a free period. You can change any of this later in Settings.</p>
+      <p class="muted small">Add each teacher too: ${campus.hasLunchSplit ? 'it sets your lunch time, and ' : ''}it’s how friends see which classes you share.</p>
       <form data-form="onboard-classes" class="stack">
         ${draft.classes
           .map(
@@ -48,13 +51,14 @@ export function renderOnboarding(draft, { accounts = false, invite = null } = {}
             <legend>Period ${c.period}</legend>
             <input name="name-${i}" placeholder="Class (e.g. Biology)" value="${esc(c.name)}" aria-label="Period ${c.period} class" />
             <div class="form-row">
-              <input name="teacher-${i}" placeholder="Teacher" value="${esc(c.teacher)}" aria-label="Period ${c.period} teacher" />
+              <input name="teacher-${i}" placeholder="Teacher" value="${esc(c.teacher)}" aria-label="Period ${c.period} teacher" list="teacher-names" autocomplete="off" />
               <input name="room-${i}" placeholder="Room" value="${esc(c.room)}" aria-label="Period ${c.period} room" />
               <select name="type-${i}" aria-label="Period ${c.period} level">${CLASS_TYPES.map((t) => `<option ${c.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select>
             </div>
           </fieldset>`,
           )
           .join('')}
+        ${teacherDatalist(draft.campus)}
         ${campus.hasLunchSplit ? '<p class="muted small">Your lunch time during 3rd block depends on your teacher. We’ll fill it in from the planner’s teacher list; you can adjust it in Settings.</p>' : ''}
         <div class="btn-row">
           <button class="btn secondary" type="button" data-action="onboard-back">Back</button>

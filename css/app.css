@@ -2982,3 +2982,115 @@ input.time-input:disabled {
   display: inline-block;
   margin-top: 4px;
 }
+
+/* ---------- Get set up ---------- */
+
+.setup-card .cap-bar {
+  margin: 2px 0 6px;
+}
+
+.setup-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.setup-step {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.setup-step:first-child {
+  border-top: 0;
+}
+
+.setup-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+}
+
+.setup-step.is-next .setup-check {
+  border-color: var(--accent);
+}
+
+.setup-step.done .setup-check {
+  border-color: var(--ok);
+  background: var(--ok);
+}
+
+.setup-check svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.setup-title {
+  font-weight: 650;
+}
+
+.setup-step.done .setup-title,
+.setup-step.skipped .setup-title {
+  color: var(--muted);
+  font-weight: 550;
+}
+
+.setup-body > .muted {
+  margin-top: 2px;
+}
+
+.setup-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 10px;
+}
+
+.setup-action .inline-form {
+  width: 100%;
+}
+
+.setup-action > p {
+  margin: 0;
+}
+
+.setup-help {
+  width: 100%;
+}
+
+.setup-help ol {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+  color: var(--text-2);
+}
+
+.setup-skip {
+  margin-top: 8px;
+}
+
+.feedback-line {
+  text-align: center;
+  margin: 8px 0 0;
+}
+
+.feedback-details pre {
+  white-space: pre-wrap;
+  font-size: 0.8rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin: 8px 0;
+}

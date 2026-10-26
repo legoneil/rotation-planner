@@ -24,11 +24,13 @@ import {
   respond,
 } from './friends.js';
 import { startOfMonth, todayISO } from './dates.js';
+import { feedbackDetails, feedbackEmail } from './feedback.js';
 import {
   activityForm,
   assignmentForm,
   authForm,
   classForm,
+  feedbackForm,
   newPasswordForm,
   quickDue,
   readActivity,
@@ -130,7 +132,7 @@ function render() {
     $view.innerHTML = renderOnboarding(ui.onboarding, { accounts: accountsEnabled && account.status !== 'signed-in', invite: pendingInvite() });
     return;
   }
-  const ctx = { ...makeContext(state), account, extension, push };
+  const ctx = { ...makeContext(state), account, extension, push, friends };
   const { name, arg } = route();
   const valid = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s ?? '');
   let html;
@@ -335,6 +337,40 @@ const actions = {
   'todo-show': (el) => {
     ui.todo.show = el.dataset.show;
     render();
+  },
+  'setup-hide': () => {
+    update((s) => {
+      s.settings.setupHidden = true;
+    });
+    toast('Hidden. Everything is in Settings too.');
+  },
+  'setup-skip': (el) =>
+    update((s) => {
+      s.settings.setupSkipped = { ...s.settings.setupSkipped, [el.dataset.key]: true };
+    }),
+  'setup-show': () => {
+    update((s) => {
+      delete s.settings.setupHidden;
+      delete s.settings.setupSkipped;
+    });
+    location.hash = '#/today';
+  },
+  'open-feedback': () => openSheet(feedbackForm(currentFeedbackDetails())),
+  'feedback-via': (el) => {
+    const form = el.closest('form');
+    if (!form.message.value.trim()) {
+      form.message.focus();
+      return toast('Write your message first.');
+    }
+    const mail = feedbackEmail({ kind: form.kind.value, message: form.message.value, details: currentFeedbackDetails() });
+    if (el.dataset.via === 'copy') {
+      navigator.clipboard
+        ?.writeText(mail.text)
+        .then(() => toast('Copied. Paste it into an email to bollesplanner@gmail.com.'))
+        .catch(() => toast('Couldn’t copy. Email bollesplanner@gmail.com instead.'));
+      return;
+    }
+    window.open(mail[el.dataset.via], '_blank', 'noopener');
   },
   'todo-older': () => {
     ui.todo.older = !ui.todo.older;
@@ -584,6 +620,10 @@ const forms = {
       msg.classList.add('is-error');
     }
   },
+  feedback: (form) => {
+    const mail = feedbackEmail({ kind: form.kind.value, message: form.message.value, details: currentFeedbackDetails() });
+    location.href = mail.mailto;
+  },
   assignment: (form) => {
     const a = readAssignment(form, ui.sheetItem);
     if (!a.title || !a.dueDate) return;
@@ -665,6 +705,12 @@ const forms = {
       }))
       .filter((c) => c.name)
       .map((c) => ({ ...c, lunch: hasLunch ? suggestLunch(c.teacher) : null }));
+    if (!classes.length) {
+      toast('Add at least one class first.');
+      form.querySelector('[name="name-0"]')?.focus();
+      return;
+    }
+    $toast.hidden = true; // an earlier "add a class" hint no longer applies
     update((s) => {
       s.profile = { campus: ui.onboarding.campus, grade: ui.onboarding.grade, classes, closures: {} };
     });
@@ -672,6 +718,22 @@ const forms = {
     location.hash = invite ? inviteHash(invite) : '#/today';
   },
 };
+
+// App details added to feedback emails, for the page under the open sheet.
+function currentFeedbackDetails() {
+  const s = getState();
+  return feedbackDetails({
+    page: location.hash,
+    ua: navigator.userAgent,
+    standalone: navigator.standalone === true || matchMedia('(display-mode: standalone)').matches,
+    extension,
+    account: account.status,
+    schoology: Boolean(s.schoology?.url && s.schoology?.lastSync) || Boolean(s.schoology?.api?.accessToken),
+    push: push.subscribed,
+    campus: s.profile ? CAMPUSES[s.profile.campus]?.shortName : null,
+    grade: s.profile?.grade,
+  });
+}
 
 function download(name, text, type) {
   const url = URL.createObjectURL(new Blob([text], { type }));

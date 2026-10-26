@@ -12,6 +12,9 @@ import { account, getClient, onAccountChange } from './account.js';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from './config.js';
 import { getState, update } from './store.js';
 
+// Where to get the extension. Swap in the Chrome Web Store page once it's listed.
+export const EXTENSION_URL = 'https://github.com/legoneil/rotation-planner/blob/claude/zealous-fermat-gt2k97/docs/EXTENSION.md';
+
 export const extension = { installed: false, version: null, status: null, canLink: false, linkedUser: null, linkSentAt: null, linkError: null, linkFailed: false };
 
 const listeners = new Set();

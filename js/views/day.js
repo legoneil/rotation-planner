@@ -2,6 +2,7 @@ import { addDays, diffDays, formatLongDate, formatRange, formatTime, minutes, no
 import { overdueWork, plannerDay } from '../planner.js';
 import { gradesCard } from './grades.js';
 import { tonightCard } from './plan.js';
+import { setupCard } from './setup.js';
 import { nowAndNext } from '../schedule.js';
 import { assignmentItem, blockRow, className, emptyState, esc, eventChips, letterBadge, statusLabel } from '../ui.js';
 import { loadLevel, overloadAlerts, testsByDate } from '../workload.js';
@@ -70,12 +71,16 @@ export function renderDay(ctx, date) {
     </section>`;
   if (!isToday) return `${head}${scheduleCard}${unplaced}`;
   // Today: on laptops the schedule sits beside the plan.
-  return `${head}${alerts}${nowCard}
+  return `${head}${alerts}${nowCard}${setupCard(ctx)}
     <div class="today-grid">
       <div>${scheduleCard}${unplaced}</div>
       <div class="today-side">${tonight}${upcoming}${gradesCard(ctx)}</div>
-    </div>`;
+    </div>
+    <p class="feedback-line muted small">Something off, or got an idea? <button class="link-btn" data-action="open-feedback">Send feedback</button></p>`;
 }
+
+// Same wording as the schedule: an empty period is a free period.
+const periodName = (b) => `P${b.period} · ${b.cls ? className(b.cls) : 'Free period'}`;
 
 function renderNowCard(current, next, nowMin) {
   const parts = [];
@@ -83,14 +88,14 @@ function renderNowCard(current, next, nowMin) {
     const left = minutes(current.end) - nowMin;
     const length = minutes(current.end) - minutes(current.start);
     const pct = Math.round(((length - left) / Math.max(length, 1)) * 100);
-    const title = current.isClass ? `P${current.period} · ${className(current.cls)}` : current.label;
+    const title = current.isClass ? periodName(current) : current.label;
     parts.push(`<div><p class="eyebrow">Now</p><p class="now-title">${esc(title)}</p>
       <p class="muted">${left} min left · ends ${esc(formatTime(current.end))}</p>
       <div class="now-progress" role="progressbar" aria-label="Time through this block" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><span style="--pct:${pct}%"></span></div></div>`);
   }
   if (next) {
     const until = minutes(next.start) - nowMin;
-    parts.push(`<div><p class="eyebrow">Next class</p><p class="now-title">P${next.period} · ${esc(className(next.cls))}</p>
+    parts.push(`<div><p class="eyebrow">Next</p><p class="now-title">${esc(periodName(next))}</p>
       <p class="muted">${until < 60 ? `in ${until} min` : esc(formatRange(next.start, next.end))}${next.cls?.room ? ` · Room ${esc(next.cls.room)}` : ''}</p></div>`);
   }
   if (!parts.length) return '';

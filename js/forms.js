@@ -1,6 +1,7 @@
 // Dialog forms for assignments, classes and activities.
 
-import { CAMPUSES } from './data/bolles-2026-27.js';
+import { CAMPUSES, US_LUNCH_TEACHERS } from './data/bolles-2026-27.js';
+import { FEEDBACK_EMAIL, KINDS } from './feedback.js';
 import { addDays, formatLongDate, formatRange } from './dates.js';
 import { meetingsOn, nextMeeting, PERIODS, suggestLunch } from './schedule.js';
 import { ASSIGNMENT_TYPES, CLASS_COLORS, CLASS_TYPES, uid } from './store.js';
@@ -132,6 +133,13 @@ export function readAssignment(form, existing) {
 
 // ---------------------------------------------------------------------------
 
+// Upper School teachers' last names (from the planner's lunch lists), offered
+// while typing so friends spell them the same way.
+export const TEACHER_NAMES = [...new Set([...US_LUNCH_TEACHERS.lunchFirst, ...US_LUNCH_TEACHERS.classFirst].map((t) => t.split(/\s+-\s+|,/)[0].trim()))].sort();
+
+export const teacherDatalist = (campusId) =>
+  campusId === 'us' ? `<datalist id="teacher-names">${TEACHER_NAMES.map((t) => `<option value="${esc(t)}"></option>`).join('')}</datalist>` : '';
+
 export function classForm(c, ctx) {
   const isNew = !ctx.profile.classes.some((x) => x.id === c.id);
   const campus = CAMPUSES[ctx.profile.campus];
@@ -151,7 +159,7 @@ export function classForm(c, ctx) {
         </label>
       </div>
       <div class="form-row">
-        <label>Teacher <input name="teacher" maxlength="80" value="${esc(c.teacher)}" placeholder="e.g. Ms. Hicks" /></label>
+        <label>Teacher <input name="teacher" maxlength="80" value="${esc(c.teacher)}" placeholder="e.g. Ms. Hicks" list="teacher-names" autocomplete="off" />${teacherDatalist(ctx.profile.campus)}</label>
         <label>Room <input name="room" maxlength="20" value="${esc(c.room)}" placeholder="e.g. S204" /></label>
       </div>
       ${campus.hasLunchSplit ? `<label>When this class is in 3rd block
@@ -301,4 +309,33 @@ export function signOutForm(email) {
       <button type="button" class="btn secondary" data-action="sign-out" data-clear="">Sign out, keep a copy on this device</button>
       <p class="muted small">Remove it if this is a shared or school computer.</p>
     </div>`;
+}
+
+// ---------------------------------------------------------------------------
+
+export function feedbackForm(details) {
+  return `
+    <form data-form="feedback" class="sheet-form">
+      <header class="sheet-head"><h2>Send feedback</h2>
+        <button type="button" class="icon-btn" data-action="close-sheet" aria-label="Close">×</button></header>
+      <p class="muted">Found a bug, or have an idea? It goes straight to the student who makes the planner.</p>
+      <label>What’s it about?
+        <select name="kind">${Object.entries(KINDS).map(([k, label]) => `<option value="${k}">${esc(label)}</option>`).join('')}</select>
+      </label>
+      <label>Message
+        <textarea name="message" rows="5" required placeholder="What happened, or what would make the planner better? A screenshot helps too: attach it to the email."></textarea>
+      </label>
+      <details class="small feedback-details"><summary>What else is included</summary>
+        <pre>${esc(details.join('\n'))}</pre>
+        <p class="muted">Nothing else from your planner: no assignments, grades or classes.</p>
+      </details>
+      <button class="btn" type="submit">Send with my email app</button>
+      <p class="muted small">No email app on this computer? Use one of these instead:</p>
+      <div class="btn-row">
+        <button type="button" class="btn secondary small" data-action="feedback-via" data-via="outlook">Outlook</button>
+        <button type="button" class="btn secondary small" data-action="feedback-via" data-via="gmail">Gmail</button>
+        <button type="button" class="btn secondary small" data-action="feedback-via" data-via="copy">Copy</button>
+      </div>
+      <p class="muted small">Or email <a href="mailto:${FEEDBACK_EMAIL}">${FEEDBACK_EMAIL}</a> yourself.</p>
+    </form>`;
 }

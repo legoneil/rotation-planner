@@ -1,3 +1,4 @@
+import { EXTENSION_URL } from '../grades.js';
 import { budgetPicker } from './plan.js';
 import { buildReminders, notifyPrefs } from '../reminders.js';
 import { CAMPUSES } from '../data/bolles-2026-27.js';
@@ -78,7 +79,7 @@ export function renderSettings(ctx) {
         ? `<p class="muted">${state.grades.courses.length} courses from Schoology, updated ${esc(new Date(state.grades.readAt).toLocaleString())}. <button class="link-btn" data-nav="#/grades">See grades</button></p>`
         : '<p class="muted">Bring in your Schoology grades with the <b>Rotation Planner Grades</b> Chrome extension on your laptop.</p>'}
       <p class="muted small">${gradesSyncText(ctx)}
-        <a href="https://github.com/legoneil/rotation-planner/blob/claude/zealous-fermat-gt2k97/docs/EXTENSION.md" target="_blank" rel="noopener">${ctx.extension?.installed ? 'Help' : 'How to install'}</a></p>
+        <a href="${EXTENSION_URL}" target="_blank" rel="noopener">${ctx.extension?.installed ? 'Help' : 'How to install'}</a></p>
       <div class="btn-row" style="margin-top:12px;align-items:center;gap:16px">
         ${ctx.extension?.canLink ? '<button class="btn secondary small" data-action="refresh-grades">Check Schoology now</button>' : ''}
         ${state.grades?.courses?.length ? '<button class="link-btn danger small" data-action="clear-grades">Remove grades from my planner</button>' : ''}
@@ -142,6 +143,15 @@ export function renderSettings(ctx) {
       <div class="btn-row">
         <button class="btn secondary" data-action="backup">Download backup</button>
         <label class="btn secondary file-btn">Restore backup<input type="file" accept="application/json,.json" data-action="restore" hidden /></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Feedback</h2>
+      <p class="muted">Found a bug, or have an idea? It goes straight to the student who makes the planner.</p>
+      <div class="btn-row" style="margin-top:12px;align-items:center;gap:16px">
+        <button class="btn small" data-action="open-feedback">Send feedback</button>
+        ${state.settings.setupHidden || Object.keys(state.settings.setupSkipped ?? {}).length ? '<button class="link-btn small" data-action="setup-show">Show the setup checklist again</button>' : ''}
       </div>
     </section>
 
