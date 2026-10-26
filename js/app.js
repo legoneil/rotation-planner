@@ -25,8 +25,10 @@ import {
 } from './friends.js';
 import { startOfMonth, todayISO } from './dates.js';
 import { feedbackDetails, feedbackEmail } from './feedback.js';
+import { initInstall, install, promptInstall, snoozeInstall } from './install.js';
 import {
   activityForm,
+  applyQuickAdd,
   assignmentForm,
   authForm,
   classForm,
@@ -132,7 +134,7 @@ function render() {
     $view.innerHTML = renderOnboarding(ui.onboarding, { accounts: accountsEnabled && account.status !== 'signed-in', invite: pendingInvite() });
     return;
   }
-  const ctx = { ...makeContext(state), account, extension, push, friends };
+  const ctx = { ...makeContext(state), account, extension, push, friends, install };
   const { name, arg } = route();
   const valid = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s ?? '');
   let html;
@@ -336,6 +338,14 @@ const actions = {
   },
   'todo-show': (el) => {
     ui.todo.show = el.dataset.show;
+    render();
+  },
+  'install-app': async () => {
+    if (await promptInstall()) toast('Installed. Open it from your Home Screen.');
+    render();
+  },
+  'install-later': () => {
+    snoozeInstall();
     render();
   },
   'setup-hide': () => {
@@ -804,6 +814,7 @@ document.addEventListener('change', async (e) => {
 document.addEventListener('input', (e) => {
   const form = e.target.closest('form');
   if (form?.dataset.form?.startsWith('need-')) updateNeed(form, makeContext(getState()));
+  if (form?.dataset.form === 'assignment' && e.target.name === 'quick') applyQuickAdd(form, makeContext(getState()));
   if (form?.dataset.form === 'class' && e.target.name === 'teacher') updateLunchHint(form);
   rememberOnboarding(e.target);
 });
@@ -850,6 +861,7 @@ onFriendsChange(() => {
 });
 initFriends();
 initGrades();
+initInstall(() => render());
 onExtensionChange(() => ['grades', 'settings'].includes(route().name) && render());
 onPushChange(() => route().name === 'settings' && render());
 initPush();

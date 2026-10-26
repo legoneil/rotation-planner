@@ -7,6 +7,7 @@
 
 import { account, getClient, onAccountChange } from './account.js';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from './config.js';
+import { isIOS as isIOSDevice } from './install.js';
 import { makeContext } from './planner.js';
 import { buildReminders, notifyPrefs } from './reminders.js';
 import { getState, onLocalChange, update } from './store.js';
@@ -18,7 +19,7 @@ const listeners = new Set();
 export const onPushChange = (fn) => listeners.add(fn);
 const emit = () => listeners.forEach((l) => l(push));
 
-const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isIOS = () => isIOSDevice(navigator.userAgent, navigator.platform, navigator.maxTouchPoints);
 const standalone = () => navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
 
 function detectSupport() {

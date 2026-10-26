@@ -77,3 +77,24 @@ test('setup checklist: next step first, ticks off as things happen, can be skipp
   // No push support and no accounts: those steps aren't offered.
   assert.deepEqual(keys({ ...base, account: { status: 'disabled' }, push: { support: 'none' } }), ['schoology', 'grades']);
 });
+
+test('Add to Home Screen: phones in the browser, unless snoozed or installed', async () => {
+  const { installCard } = await import('../js/views/setup.js');
+  const { isIOS, offerInstall } = await import('../js/install.js');
+  const now = new Date(2026, 9, 27);
+  const card = (install) => installCard({ install, now });
+  const ios = { platform: 'ios', standalone: false, canPrompt: false, installed: false, dismissedUntil: 0 };
+  assert.match(card(ios), /Add to Home Screen/);
+  assert.match(card(ios), /needed for reminders/);
+  assert.equal(card({ ...ios, standalone: true }), '', 'already opened from the Home Screen');
+  assert.equal(card({ ...ios, dismissedUntil: now.getTime() + 1 }), '', 'snoozed');
+  assert.equal(card({ ...ios, platform: null }), '', 'not on laptops');
+  const android = { ...ios, platform: 'android' };
+  assert.equal(card(android), '', 'Android waits until Chrome says it can be installed');
+  assert.match(card({ ...android, canPrompt: true }), /data-action="install-app"/);
+  assert.equal(card({ ...android, canPrompt: true, installed: true }), '');
+  assert.equal(offerInstall(undefined), false);
+  assert.ok(isIOS('Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X)'));
+  assert.ok(isIOS('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', 'MacIntel', 5), 'iPad in desktop mode');
+  assert.ok(!isIOS('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', 'MacIntel', 0));
+});

@@ -3094,3 +3094,46 @@ input.time-input:disabled {
   padding: 10px 12px;
   margin: 8px 0;
 }
+
+/* ---------- Quick add ---------- */
+
+.quick-add input {
+  background-color: var(--accent-soft);
+  font-weight: 550;
+}
+
+.quick-preview {
+  margin: -4px 2px 4px;
+  min-height: 1.3em;
+}
+
+/* ---------- Add to Home Screen ---------- */
+
+.install-steps {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: 0.92rem;
+}
+
+.share-ico {
+  width: 18px;
+  height: 18px;
+  vertical-align: -3px;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.install-card .btn-row {
+  margin-top: 12px;
+}
+
+.card-head > .link-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}

@@ -3,6 +3,7 @@
 // Only the next step shows its buttons, so the card stays short.
 
 import { EXTENSION_URL } from '../grades.js';
+import { offerInstall } from '../install.js';
 import { esc } from '../ui.js';
 
 const CHECK = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 10.5l3 3 7-7" /></svg>';
@@ -81,6 +82,29 @@ export function setupSteps(ctx) {
 
   const skipped = state.settings?.setupSkipped ?? {};
   return steps.map((s) => ({ ...s, skipped: !s.done && Boolean(skipped[s.key]) }));
+}
+
+// iOS's Share icon: a box with an arrow out of the top.
+const SHARE = '<svg class="share-ico" viewBox="0 0 20 20" aria-label="Share"><path d="M10 2.5v10M6.5 6 10 2.5 13.5 6M6 9H4.5v8.5h11V9H14" /></svg>';
+
+// Phones only: put the planner on the Home Screen.
+export function installCard(ctx) {
+  const i = ctx.install;
+  if (!offerInstall(i, ctx.now?.getTime?.() ?? Date.now())) return '';
+  const body =
+    i.platform === 'ios'
+      ? `<ol class="install-steps">
+          <li>Tap ${SHARE} <b>Share</b> (at the bottom in Safari, in the address bar in Chrome).</li>
+          <li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+          <li>Open the planner from its new icon.</li>
+        </ol>`
+      : '<div class="btn-row"><button class="btn small" data-action="install-app">Install</button></div>';
+  return `<section class="card install-card">
+    <div class="card-head"><h2>Add to your Home Screen</h2>
+      <button class="link-btn small" data-action="install-later">Not now</button></div>
+    <p class="muted small">It opens like an app, works without signal${i.platform === 'ios' ? ', and on iPhone it’s needed for reminders' : ''}.</p>
+    ${body}
+  </section>`;
 }
 
 export function setupCard(ctx) {

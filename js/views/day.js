@@ -2,7 +2,7 @@ import { addDays, diffDays, formatLongDate, formatRange, formatTime, minutes, no
 import { overdueWork, plannerDay } from '../planner.js';
 import { gradesCard } from './grades.js';
 import { tonightCard } from './plan.js';
-import { setupCard } from './setup.js';
+import { installCard, setupCard } from './setup.js';
 import { nowAndNext } from '../schedule.js';
 import { assignmentItem, blockRow, className, emptyState, esc, eventChips, letterBadge, statusLabel } from '../ui.js';
 import { loadLevel, overloadAlerts, testsByDate } from '../workload.js';
@@ -71,7 +71,7 @@ export function renderDay(ctx, date) {
     </section>`;
   if (!isToday) return `${head}${scheduleCard}${unplaced}`;
   // Today: on laptops the schedule sits beside the plan.
-  return `${head}${alerts}${nowCard}${setupCard(ctx)}
+  return `${head}${alerts}${nowCard}${installCard(ctx)}${setupCard(ctx)}
     <div class="today-grid">
       <div>${scheduleCard}${unplaced}</div>
       <div class="today-side">${tonight}${upcoming}${gradesCard(ctx)}</div>

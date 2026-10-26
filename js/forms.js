@@ -2,6 +2,7 @@
 
 import { CAMPUSES, US_LUNCH_TEACHERS } from './data/bolles-2026-27.js';
 import { FEEDBACK_EMAIL, KINDS } from './feedback.js';
+import { parseQuickAdd } from './quickadd.js';
 import { addDays, formatLongDate, formatRange } from './dates.js';
 import { meetingsOn, nextMeeting, PERIODS, suggestLunch } from './schedule.js';
 import { ASSIGNMENT_TYPES, CLASS_COLORS, CLASS_TYPES, uid } from './store.js';
@@ -18,12 +19,16 @@ export function assignmentForm(a, ctx) {
   const fromSgy = a.source === 'schoology';
   const classes = [...ctx.profile.classes].sort((x, y) => x.period - y.period);
   return `
-    <form data-form="assignment" class="sheet-form">
+    <form data-form="assignment" class="sheet-form" data-preset-due="${esc(isNew ? (a.dueDate ?? '') : '')}">
       <header class="sheet-head"><h2>${isNew ? 'New assignment' : 'Edit assignment'}</h2>
         <button type="button" class="icon-btn" data-action="close-sheet" aria-label="Close">×</button></header>
       <input type="hidden" name="id" value="${esc(a.id ?? '')}" />
+      ${isNew ? `<label class="quick-add">Type it
+          <input name="quick" maxlength="200" autocomplete="off" enterkeyhint="done" placeholder="e.g. bio test friday" autofocus />
+        </label>
+        <p class="quick-preview muted small" data-quick-preview aria-live="polite">Try “bio test friday” or “read ch 7 for english tomorrow”, or fill in the details below.</p>` : ''}
       <label>What is it?
-        <input name="title" required maxlength="200" placeholder="e.g. Chapter 5 test" value="${esc(a.title ?? '')}" ${fromSgy ? 'readonly' : 'autofocus'} />
+        <input name="title" required maxlength="200" placeholder="e.g. Chapter 5 test" value="${esc(a.title ?? '')}" ${fromSgy ? 'readonly' : isNew ? '' : 'autofocus'} />
       </label>
       <div class="form-row">
         <label>Type
@@ -64,6 +69,34 @@ export function assignmentForm(a, ctx) {
         <button type="submit" class="btn">Save</button>
       </footer>
     </form>`;
+}
+
+// "Type it": fill the fields below from one line, and say what was understood.
+export function applyQuickAdd(form, ctx) {
+  const text = form.quick.value;
+  const r = parseQuickAdd(text, ctx);
+  const preview = form.querySelector('[data-quick-preview]');
+  form.title.value = r.title;
+  form.type.value = r.type;
+  form.classId.value = r.classId ?? '';
+  form.dueDate.value = r.dueDate ?? form.dataset.presetDue ?? '';
+  // The closest time on the list, if one was typed.
+  form.minutes.value = r.minutes ? String(TIME_CHOICES.reduce((a, b) => (Math.abs(b - r.minutes) < Math.abs(a - r.minutes) ? b : a))) : '';
+  if (!text.trim()) {
+    preview.textContent = 'Try “bio test friday” or “read ch 7 for english tomorrow”, or fill in the details below.';
+  } else {
+    const cls = ctx.classesById.get(r.classId);
+    const due = form.dueDate.value;
+    preview.innerHTML = [
+      `<b>${esc(ASSIGNMENT_TYPES.find((t) => t.id === r.type)?.label ?? 'Homework')}</b>`,
+      cls ? esc(className(cls)) : 'no class yet',
+      due ? `due ${esc(formatLongDate(due))}${r.dueAtClass ? ' (next class)' : ''}` : 'no date yet: add a day, or a class to make it due next class',
+      r.minutes ? esc(formatMinutes(Number(form.minutes.value))) : null,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  }
+  updateDueInfo(form, ctx);
 }
 
 // Live feedback under the due date: which period it's due in and test-load warnings.

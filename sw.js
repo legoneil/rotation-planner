@@ -1,6 +1,6 @@
 // Offline support: serve the app shell from cache when the network is down,
 // but always prefer the network so updates show up right away.
-const CACHE = 'bolles-planner-v16';
+const CACHE = 'bolles-planner-v17';
 const SHELL = [
   './',
   'index.html',
@@ -19,10 +19,12 @@ const SHELL = [
   'js/friends.js',
   'js/grades.js',
   'js/gradework.js',
+  'js/install.js',
   'js/invite.js',
   'js/ical.js',
   'js/notify.js',
   'js/planner.js',
+  'js/quickadd.js',
   'js/reminders.js',
   'js/schedule.js',
   'js/store.js',

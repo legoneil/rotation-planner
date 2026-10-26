@@ -3,7 +3,7 @@
 // School laptops often have no email app set up, so Gmail and Outlook on the
 // web are offered too, plus copying it all.
 
-export const APP_VERSION = 16; // keep in step with CACHE in sw.js (a test checks)
+export const APP_VERSION = 17; // keep in step with CACHE in sw.js (a test checks)
 export const FEEDBACK_EMAIL = 'bollesplanner@gmail.com';
 
 export const KINDS = { bug: 'Something’s wrong', idea: 'An idea', other: 'Something else' };
